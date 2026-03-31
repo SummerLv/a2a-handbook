@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A Protocol Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #21262d;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #d29922;
+            --accent-purple: #bc8cff;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--text-secondary);
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .card h2 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card h2 .icon {
+            font-size: 1.2em;
+        }
+        
+        /* Connection Panel */
+        .connection-panel {
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #4c9aed;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* Agent Card Display */
+        .agent-card {
+            margin-top: 20px;
+        }
+        
+        .agent-info {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .agent-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .agent-desc {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .agent-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            flex-wrap: wrap;
+        }
+        
+        .agent-meta span {
+            background: var(--bg-card);
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+        
+        .skills-list {
+            margin-top: 10px;
+        }
+        
+        .skill-tag {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 4px 4px 4px 0;
+        }
+        
+        /* Message Panel */
+        .message-panel {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+        }
+        
+        .message-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+        
+        .message-item {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .message-type {
+            font-size: 0.85em;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        
+        .message-type.request {
+            background: rgba(210, 153, 34, 0.2);
+            color: var(--accent-orange);
+        }
+        
+        .message-type.response {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .message-type.error {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+        
+        .message-time {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+        }
+        
+        .message-content {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        
+        pre {
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        /* JSON Syntax Highlighting */
+        .json-key { color: var(--accent-blue); }
+        .json-string { color: var(--accent-green); }
+        .json-number { color: var(--accent-orange); }
+        .json-boolean { color: var(--accent-purple); }
+        .json-null { color: var(--text-secondary); }
+        
+        /* Input Area */
+        .input-area {
+            padding: 15px;
+            background: var(--bg-input);
+            border-radius: 8px;
+        }
+        
+        .input-area textarea {
+            background: var(--bg-dark);
+            margin-bottom: 10px;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 15px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+        
+        .status-dot.connected {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+        
+        .status-dot.error {
+            background: #f85149;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Context Info */
+        .context-info {
+            background: rgba(188, 140, 255, 0.1);
+            border: 1px solid rgba(188, 140, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .context-info span {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤝 A2A Protocol Playground</h1>
+            <p>Agent-to-Agent 协议交互式验证工具</p>
+        </header>
+        
+        <div class="main-grid">
+            <!-- Left Panel: Connection & Agent Info -->
+            <div class="sidebar">
+                <div class="card connection-panel">
+                    <h2><span class="icon">🔌</span> 连接配置</h2>
+                    
+                    <div class="input-group">
+                        <label>Agent URL</label>
+                        <input type="text" id="agentUrl" value="http://127.0.0.1:8888" placeholder="http://127.0.0.1:8888">
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn" id="connectBtn" onclick="connect()">
+                            <span>🔗</span> 获取 Agent Card
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearHistory()">
+                            <span>🗑️</span> 清空历史
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card agent-card" id="agentCardPanel" style="display: none;">
+                    <h2><span class="icon">📋</span> Agent 信息</h2>
+                    <div class="agent-info">
+                        <div class="agent-name" id="agentName">-</div>
+                        <div class="agent-desc" id="agentDesc">-</div>
+                        <div class="agent-meta">
+                            <span id="agentVersion">v-</span>
+                            <span id="agentStreaming">streaming: -</span>
+                        </div>
+                    </div>
+                    <div class="skills-list" id="skillsList"></div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2><span class="icon">📖</span> 快速参考</h2>
+                    <div style="font-size: 0.85em; color: var(--text-secondary); line-height: 1.8;">
+                        <p><strong>获取 Agent Card:</strong></p>
+                        <code style="background: var(--bg-input); padding: 2px 6px; border-radius: 4px;">
+                            GET /.well-known/agent.json
+                        </code>
+                        <p style="margin-top: 10px;"><strong>发送消息:</strong></p>
+                        <code style="background: var(--bg-input); padding: 2px 6px; border-radius: 4px;">
+                            POST / { method: "message/send" }
+                        </code>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Message Interaction -->
+            <div class="card message-panel">
+                <div class="status-bar">
+                    <div class="status-indicator">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span id="statusText">未连接</span>
+                    </div>
+                    <div id="contextInfo" style="display: none;">
+                        Context: <span id="currentContextId">-</span>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="resetContext()">
+                        重置上下文
+                    </button>
+                </div>
+                
+                <div class="message-history" id="messageHistory">
+                    <div class="empty-state">
+                        <div class="icon">💬</div>
+                        <p>输入 Agent URL 并点击"获取 Agent Card"开始</p>
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <textarea id="messageInput" placeholder="输入消息内容...&#10;&#10;提示: 按 Ctrl+Enter 发送"></textarea>
+                    <div class="btn-group">
+                        <button class="btn" id="sendBtn" onclick="sendMessage()" disabled>
+                            <span>📤</span> 发送消息
+                        </button>
+                        <button class="btn btn-secondary" onclick="sendCustomJson()">
+                            <span>📝</span> 自定义 JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let agentUrl = '';
+        let agentCard = null;
+        let contextId = null;
+        let taskId = null;
+        let messageId = 1;
+        let messageHistory = [];
+        
+        // DOM Elements
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const messageHistoryEl = document.getElementById('messageHistory');
+        const agentCardPanel = document.getElementById('agentCardPanel');
+        const sendBtn = document.getElementById('sendBtn');
+        const contextInfoEl = document.getElementById('contextInfo');
+        
+        // Initialize
+        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Connect and fetch Agent Card
+        async function connect() {
+            agentUrl = document.getElementById('agentUrl').value.trim().replace(/\/$/, '');
+            const connectBtn = document.getElementById('connectBtn');
+            
+            connectBtn.disabled = true;
+            connectBtn.innerHTML = '<span class="spinner"></span> 连接中...';
+            
+            try {
+                const response = await fetch(`${agentUrl}/.well-known/agent.json`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                agentCard = await response.json();
+                
+                // Update UI
+                statusDot.classList.add('connected');
+                statusText.textContent = '已连接';
+                sendBtn.disabled = false;
+                
+                // Display Agent Card
+                displayAgentCard(agentCard);
+                
+                // Log
+                addMessage('response', 'Agent Card 获取成功', agentCard);
+                
+            } catch (error) {
+                statusDot.classList.remove('connected');
+                statusDot.classList.add('error');
+                statusText.textContent = '连接失败';
+                addMessage('error', '连接失败', { error: error.message });
+            } finally {
+                connectBtn.disabled = false;
+                connectBtn.innerHTML = '<span>🔗</span> 获取 Agent Card';
+            }
+        }
+        
+        // Display Agent Card
+        function displayAgentCard(card) {
+            agentCardPanel.style.display = 'block';
+            
+            document.getElementById('agentName').textContent = card.name || 'Unknown Agent';
+            document.getElementById('agentDesc').textContent = card.description || 'No description';
+            document.getElementById('agentVersion').textContent = `v${card.version || '0.0.0'}`;
+            document.getElementById('agentStreaming').textContent = 
+                `streaming: ${card.capabilities?.streaming ? '✓' : '✗'}`;
+            
+            const skillsList = document.getElementById('skillsList');
+            if (card.skills && card.skills.length > 0) {
+                skillsList.innerHTML = card.skills.map(skill => 
+                    `<span class="skill-tag" title="${skill.description || ''}">${skill.name || skill.id}</span>`
+                ).join('');
+            } else {
+                skillsList.innerHTML = '<span style="color: var(--text-secondary);">无可用技能</span>';
+            }
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const text = document.getElementById('messageInput').value.trim();
+            if (!text) return;
+            
+            const message = {
+                role: 'user',
+                parts: [{ kind: 'text', text }],
+                messageId: generateUUID()
+            };
+            
+            if (contextId) message.contextId = contextId;
+            if (taskId) message.taskId = taskId;
+            
+            const request = {
+                jsonrpc: '2.0',
+                id: messageId++,
+                method: 'message/send',
+                params: { message }
+            };
+            
+            addMessage('request', `发送消息: "${text}"`, request);
+            
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="spinner"></span> 发送中...';
+            
+            try {
+                const response = await fetch(agentUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request)
+                });
+                
+                const result = await response.json();
+                
+                // Update context
+                if (result.result?.contextId) {
+                    contextId = result.result.contextId;
+                    document.getElementById('currentContextId').textContent = contextId.substring(0, 8) + '...';
+                    contextInfoEl.style.display = 'block';
+                }
+                if (result.result?.taskId) {
+                    taskId = result.result.taskId;
+                }
+                
+                // Extract text response
+                let responseText = '';
+                if (result.result?.parts) {
+                    const textPart = result.result.parts.find(p => p.kind === 'text');
+                    if (textPart) responseText = textPart.text;
+                }
+                
+                addMessage('response', responseText ? `响应: "${responseText}"` : '收到响应', result);
+                
+            } catch (error) {
+                addMessage('error', '请求失败', { error: error.message });
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<span>📤</span> 发送消息';
+                document.getElementById('messageInput').value = '';
+            }
+        }
+        
+        // Send custom JSON
+        function sendCustomJson() {
+            const json = prompt('输入自定义 JSON-RPC 请求:', JSON.stringify({
+                jsonrpc: '2.0',
+                id: messageId,
+                method: 'message/send',
+                params: {
+                    message: {
+                        role: 'user',
+                        parts: [{ kind: 'text', text: 'Hello' }],
+                        messageId: generateUUID()
+                    }
+                }
+            }, null, 2));
+            
+            if (!json) return;
+            
+            try {
+                const request = JSON.parse(json);
+                sendCustomRequest(request);
+            } catch (e) {
+                alert('JSON 格式错误: ' + e.message);
+            }
+        }
+        
+        async function sendCustomRequest(request) {
+            addMessage('request', '自定义请求', request);
+            
+            try {
+                const response = await fetch(agentUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request)
+                });
+                
+                const result = await response.json();
+                addMessage('response', '收到响应', result);
+                
+            } catch (error) {
+                addMessage('error', '请求失败', { error: error.message });
+            }
+        }
+        
+        // Add message to history
+        function addMessage(type, title, data) {
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            messageHistory.push({ type, title, data, time });
+            
+            const item = document.createElement('div');
+            item.className = 'message-item';
+            item.innerHTML = `
+                <div class="message-header">
+                    <span class="message-type ${type}">${type === 'request' ? '请求' : type === 'response' ? '响应' : '错误'}</span>
+                    <span class="message-time">${time}</span>
+                    <span style="color: var(--text-secondary); font-size: 0.85em;">${escapeHtml(title)}</span>
+                </div>
+                <div class="message-content">
+                    <pre>${syntaxHighlight(JSON.stringify(data, null, 2))}</pre>
+                </div>
+            `;
+            
+            // Remove empty state
+            const emptyState = messageHistoryEl.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            
+            messageHistoryEl.appendChild(item);
+            messageHistoryEl.scrollTop = messageHistoryEl.scrollHeight;
+        }
+        
+        // Clear history
+        function clearHistory() {
+            messageHistory = [];
+            messageHistoryEl.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">💬</div>
+                    <p>历史已清空</p>
+                </div>
+            `;
+        }
+        
+        // Reset context
+        function resetContext() {
+            contextId = null;
+            taskId = null;
+            contextInfoEl.style.display = 'none';
+            addMessage('request', '重置上下文', { contextId: null, taskId: null });
+        }
+        
+        // Helpers
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function syntaxHighlight(json) {
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                        match = match.slice(0, -1) + '<span class="json-string">:</span>';
+                        return `<span class="${cls}">${match.slice(0, -1)}</span>`;
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return `<span class="${cls}">${match}</span>`;
+            });
+        }
+    </script>
+</body>
+</html>
